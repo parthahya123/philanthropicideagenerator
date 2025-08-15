@@ -25,10 +25,9 @@ streamlit run app.py
 ```
 
 4) Use
-- Select sources and topics.
-- Click Ingest to fetch ~10 recent items/source.
-- Click Generate Ideas to synthesize a 25-idea shortlist.
-- Export to CSV/Markdown.
+- Enter topics (comma-separated) and choose sources.
+- Click Generate Ideas — the app automatically ingests sources, then synthesizes ideas.
+- Export JSON from the UI.
 
 ### Sources (initial)
 - RSS: Open Philanthropy, Rethink Priorities, ACX, Dwarkesh, Brian Potter, Slow Boring, CGD, EA Forum, Lewis Bollard, Statecraft, Asterisk, etc.

@@ -13,6 +13,7 @@ from src.synthesis.idea_generator import synthesize_ideas
 from src.synthesis.botec import BENCHMARKS
 from src.connectors.who_gho import search_gho_indicators
 from src.connectors.ghdx import fetch_gbd_dalys_latest
+from src.connectors.crossref import search_crossref
 
 
 load_dotenv()
@@ -22,8 +23,6 @@ st.title("Idea Generator MVP")
 st.caption("Generates philanthropic ideas from reputable sources and synthesizes light BOTECs.")
 
 
-if "docs" not in st.session_state:
-    st.session_state.docs = []
 if "ideas" not in st.session_state:
     st.session_state.ideas = []
 
@@ -69,6 +68,7 @@ with col2:
     use_medrxiv = st.checkbox("Include medRxiv", value=True)
     use_who_gho = st.checkbox("Include WHO GHO indicators", value=False)
     use_ghdx = st.checkbox("Include GHDx (GBD DALYs latest)", value=False)
+    use_crossref = st.checkbox("Include Crossref (peer-reviewed metadata)", value=False)
 
 
 def ingest() -> List[Dict]:
@@ -93,30 +93,24 @@ def ingest() -> List[Dict]:
     # GHDx GBD
     if use_ghdx:
         docs.extend(fetch_gbd_dalys_latest())
+    # Crossref
+    if use_crossref and topics.strip():
+        for kw in [t.strip() for t in topics.split(",") if t.strip()]:
+            docs.extend(search_crossref(kw, rows=5))
     return docs
 
 
-with st.expander("Ingested documents", expanded=False):
-    st.write("No documents yet. Click 'Ingest sources' below.")
-
-
-ingest_col, gen_col, export_col = st.columns([1, 1, 1])
-with ingest_col:
-    if st.button("Ingest sources"):
-        with st.spinner("Fetching sources..."):
-            st.session_state.docs = ingest()
-        st.success(f"Fetched {len(st.session_state.docs)} documents.")
+gen_col, export_col = st.columns([1, 1])
 with gen_col:
-    if st.button("Generate ideas"):
+    if st.button("Generate ideas", type="primary"):
         if not os.getenv("OPENAI_API_KEY"):
-            st.error("Missing OPENAI_API_KEY. Set it in your environment or .env file.")
-        elif not st.session_state.docs:
-            st.warning("No documents ingested. Click 'Ingest sources' first.")
+            st.error("Missing OPENAI_API_KEY. Set it in the sidebar or your environment.")
         else:
-            with st.spinner("Synthesizing ideas with BOTECs..."):
+            with st.spinner("Fetching sources and synthesizing ideas..."):
+                docs = ingest()
                 st.session_state.ideas = synthesize_ideas(
                     topics=topics,
-                    documents=st.session_state.docs,
+                    documents=docs,
                     num_ideas=num_ideas,
                 )
             st.success(f"Generated {len(st.session_state.ideas)} ideas.")
@@ -145,5 +139,10 @@ else:
                 st.write("Evidence sources:")
                 for s in idea["sources"][:5]:
                     st.write(f"- [{s.get('title','source')}]({s.get('url')})")
+
+with st.expander("Advanced: show ingested docs (from last run)", expanded=False):
+    st.write("Docs are fetched automatically when generating ideas.")
+    if st.session_state.ideas:
+        st.write("Top source links embedded in each idea above.")
 
 
