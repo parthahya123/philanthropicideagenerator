@@ -72,7 +72,7 @@ Return JSON list with objects containing:
 - total_cost (USD range ok)
 - ce_vs_benchmark (short comparison text)
 - candidates (1-3 names or orgs)
-- sources (list of {title, url})
+- sources (list of {{title, url}})
 Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
 """
 
