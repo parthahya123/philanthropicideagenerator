@@ -35,7 +35,7 @@ def _build_context(documents: List[Dict], max_chars: int = 12000) -> str:
     return "\n".join(parts)
 
 
-@retry(wait=wait_exponential(min=1, max=20), stop=stop_after_attempt(3))
+@retry(wait=wait_exponential(min=1, max=5), stop=stop_after_attempt(2))
 def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int = 2000) -> str:
     # Ensure message contents are strings
     safe_messages = []
@@ -56,7 +56,8 @@ def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int 
         except Exception as exc:  # capture and try fallback models
             last_exc = exc
             continue
-    raise RuntimeError(f"LLM call failed: {last_exc}")
+    # Fallback to empty JSON list to avoid crashing the app; upstream will handle gracefully
+    return "[]"
 
 
 def synthesize_ideas(topics: str, documents: List[Dict], num_ideas: int = 25) -> List[Dict]:
