@@ -42,7 +42,7 @@ with st.sidebar:
         help="Used for API queries and LLM focus",
     )
     max_items = st.slider("Max items per source", 5, 20, 10)
-    num_ideas = st.slider("Ideas to generate", 10, 40, 25)
+    num_ideas = st.slider("Ideas to generate", 5, 40, 5)
     st.write("Benchmarks (fixed):")
     st.json(BENCHMARKS, expanded=False)
 
