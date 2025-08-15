@@ -39,62 +39,38 @@ with st.sidebar:
     topics = st.text_input(
         "Topics (comma-separated)",
         value="statins, broiler welfare, respirators, clean indoor air, lead exposure, e-cooking, GLP-1, TB preventive therapy",
-        help="Used for arXiv/bioRxiv queries and LLM focus",
+        help="Used for API queries and LLM focus",
     )
     max_items = st.slider("Max items per source", 5, 20, 10)
     num_ideas = st.slider("Ideas to generate", 10, 40, 25)
     st.write("Benchmarks (fixed):")
     st.json(BENCHMARKS, expanded=False)
 
-st.subheader("Sources")
-col1, col2 = st.columns(2)
-with col1:
-    selected_rss = st.multiselect(
-        "RSS sources",
-        options=list(DEFAULT_RSS_SOURCES.keys()),
-        default=[
-            "Open Philanthropy",
-            "Rethink Priorities",
-            "Astral Codex Ten",
-            "CGD",
-            "EA Forum",
-            "Brian Potter",
-            "Slow Boring",
-        ],
-    )
-with col2:
-    use_arxiv = st.checkbox("Include arXiv", value=True)
-    use_biorxiv = st.checkbox("Include bioRxiv", value=True)
-    use_medrxiv = st.checkbox("Include medRxiv", value=True)
-    use_who_gho = st.checkbox("Include WHO GHO indicators", value=False)
-    use_ghdx = st.checkbox("Include GHDx (GBD DALYs latest)", value=False)
-    use_crossref = st.checkbox("Include Crossref (peer-reviewed metadata)", value=False)
+st.subheader("Sources used (auto-selected)")
+st.caption("The app chooses reputable sources automatically; no selection needed.")
+st.write(", ".join(sorted(DEFAULT_RSS_SOURCES.keys() | set(["arXiv", "bioRxiv", "medRxiv", "WHO GHO", "GHDx GBD", "Crossref"]))))
 
 
 def ingest() -> List[Dict]:
     docs: List[Dict] = []
     # RSS
-    if selected_rss:
-        rss_docs = fetch_rss_items({k: DEFAULT_RSS_SOURCES[k] for k in selected_rss}, limit=max_items)
-        docs.extend(rss_docs)
+    rss_docs = fetch_rss_items(DEFAULT_RSS_SOURCES, limit=max_items)
+    docs.extend(rss_docs)
     # arXiv
-    if use_arxiv and topics.strip():
+    if topics.strip():
         docs.extend(search_arxiv(topics, max_results=max_items))
     # bioRxiv / medRxiv
     if topics.strip():
-        if use_biorxiv:
-            docs.extend(search_bio_server(topics, server="biorxiv", max_results=max_items))
-        if use_medrxiv:
-            docs.extend(search_bio_server(topics, server="medrxiv", max_results=max_items))
+        docs.extend(search_bio_server(topics, server="biorxiv", max_results=max_items))
+        docs.extend(search_bio_server(topics, server="medrxiv", max_results=max_items))
     # WHO GHO
-    if use_who_gho and topics.strip():
+    if topics.strip():
         for kw in [t.strip() for t in topics.split(",") if t.strip()]:
             docs.extend(search_gho_indicators(kw, limit=5))
     # GHDx GBD
-    if use_ghdx:
-        docs.extend(fetch_gbd_dalys_latest())
+    docs.extend(fetch_gbd_dalys_latest())
     # Crossref
-    if use_crossref and topics.strip():
+    if topics.strip():
         for kw in [t.strip() for t in topics.split(",") if t.strip()]:
             docs.extend(search_crossref(kw, rows=5))
     return docs
@@ -122,7 +98,7 @@ with export_col:
 
 st.subheader("Ideas")
 if not st.session_state.ideas:
-    st.info("No ideas yet. Ingest sources, then generate ideas.")
+    st.info("No ideas yet. Click 'Generate ideas'.")
 else:
     for idx, idea in enumerate(st.session_state.ideas, 1):
         with st.expander(f"{idx}. {idea.get('title', 'Idea')}", expanded=False):
