@@ -37,14 +37,26 @@ def _build_context(documents: List[Dict], max_chars: int = 12000) -> str:
 
 @retry(wait=wait_exponential(min=1, max=20), stop=stop_after_attempt(3))
 def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int = 2000) -> str:
+    # Ensure message contents are strings
+    safe_messages = []
+    for m in messages:
+        safe_messages.append({"role": m.get("role", "user"), "content": str(m.get("content", ""))})
+
     client = OpenAI()
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.6,
-        max_tokens=max_tokens,
-    )
-    return resp.choices[0].message.content or ""
+    last_exc = None
+    for m in [model, "gpt-4o", "gpt-4o-mini-2024-07-18", "gpt-3.5-turbo-0125"]:
+        try:
+            resp = client.chat.completions.create(
+                model=m,
+                messages=safe_messages,
+                temperature=0.6,
+                max_tokens=max_tokens,
+            )
+            return resp.choices[0].message.content or ""
+        except Exception as exc:  # capture and try fallback models
+            last_exc = exc
+            continue
+    raise RuntimeError(f"LLM call failed: {last_exc}")
 
 
 def synthesize_ideas(topics: str, documents: List[Dict], num_ideas: int = 25) -> List[Dict]:
