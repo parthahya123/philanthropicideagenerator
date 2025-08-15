@@ -13,6 +13,8 @@ DEFAULT_RSS_SOURCES: Dict[str, str] = {
     "EA Forum": "https://forum.effectivealtruism.org/posts.rss",
     "Lewis Bollard": "https://www.lewisbollard.com/feed",
     "Asterisk Magazine": "https://asteriskmag.com/feed.xml",
+    "Our World in Data": "https://ourworldindata.org/feed",
+    "IHME": "https://www.healthdata.org/rss.xml",
 }
 
 

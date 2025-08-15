@@ -11,6 +11,7 @@ from src.connectors.arxiv_connector import search_arxiv
 from src.connectors.bio_connector import search_bio_server
 from src.synthesis.idea_generator import synthesize_ideas
 from src.synthesis.botec import BENCHMARKS
+from src.connectors.who_gho import search_gho_indicators
 
 
 load_dotenv()
@@ -65,6 +66,7 @@ with col2:
     use_arxiv = st.checkbox("Include arXiv", value=True)
     use_biorxiv = st.checkbox("Include bioRxiv", value=True)
     use_medrxiv = st.checkbox("Include medRxiv", value=True)
+    use_who_gho = st.checkbox("Include WHO GHO indicators", value=False)
 
 
 def ingest() -> List[Dict]:
@@ -82,6 +84,10 @@ def ingest() -> List[Dict]:
             docs.extend(search_bio_server(topics, server="biorxiv", max_results=max_items))
         if use_medrxiv:
             docs.extend(search_bio_server(topics, server="medrxiv", max_results=max_items))
+    # WHO GHO
+    if use_who_gho and topics.strip():
+        for kw in [t.strip() for t in topics.split(",") if t.strip()]:
+            docs.extend(search_gho_indicators(kw, limit=5))
     return docs
 
 
