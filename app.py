@@ -12,6 +12,7 @@ from src.connectors.bio_connector import search_bio_server
 from src.synthesis.idea_generator import synthesize_ideas
 from src.synthesis.botec import BENCHMARKS
 from src.connectors.who_gho import search_gho_indicators
+from src.connectors.ghdx import fetch_gbd_dalys_latest
 
 
 load_dotenv()
@@ -67,6 +68,7 @@ with col2:
     use_biorxiv = st.checkbox("Include bioRxiv", value=True)
     use_medrxiv = st.checkbox("Include medRxiv", value=True)
     use_who_gho = st.checkbox("Include WHO GHO indicators", value=False)
+    use_ghdx = st.checkbox("Include GHDx (GBD DALYs latest)", value=False)
 
 
 def ingest() -> List[Dict]:
@@ -88,6 +90,9 @@ def ingest() -> List[Dict]:
     if use_who_gho and topics.strip():
         for kw in [t.strip() for t in topics.split(",") if t.strip()]:
             docs.extend(search_gho_indicators(kw, limit=5))
+    # GHDx GBD
+    if use_ghdx:
+        docs.extend(fetch_gbd_dalys_latest())
     return docs
 
 
