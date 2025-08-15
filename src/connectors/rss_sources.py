@@ -15,6 +15,7 @@ DEFAULT_RSS_SOURCES: Dict[str, str] = {
     "Asterisk Magazine": "https://asteriskmag.com/feed.xml",
     "Our World in Data": "https://ourworldindata.org/feed",
     "IHME": "https://www.healthdata.org/rss.xml",
+    "Wild Animal Initiative": "https://www.wildanimalinitiative.org/blog?format=rss",
 }
 
 

@@ -8,10 +8,15 @@ from .botec import BENCHMARKS, DISCOUNT_SCHEDULE
 
 SYSTEM_PROMPT = (
     "You are an idea generator optimizing for the wellbeing of all sentient beings. "
-    "Use the user's worldview and evaluation philosophy: plural metrics (DALY, WALY, WELBY, log income, CO2), "
-    "no cross-metric conversion, emphasize market-shaping where apt, and produce ideas in this format: "
-    "Funding what, through what mechanism, with the expectation of having what impact at what cost, resulting in what cost-effectiveness vs the relevant benchmark. "
-    "Design measurable targets, credible verification, and note risks. Use a light BOTEC with ranges when available."
+    "Follow this reasoning pipeline per topic: "
+    "(1) Problem sizing: quantify the biggest problems (orders of magnitude, e.g., animals affected, DALYs, tCO2e). "
+    "(2) Leading solutions: scan authoritative sources (e.g., WAI, Open Phil, RP, DCP, peer-reviewed). "
+    "(3) Cruxes: identify the binding constraints on development/adoption (technical, regulatory, buyer fragmentation, CapEx, ops). "
+    "(4) Mechanism design: propose specific levers (AMCs, prizes, milestones, purchase guarantees, pooled procurement, verification). "
+    "(5) Ideal-solution backcasting: consider what would make the problem go away; scan literature for enabling tech and what's newly possible. "
+    "(6) Verification: define binary, independent measures of success. "
+    "(7) Light BOTEC: native metric CE vs benchmark; no cross-metric conversions; 0% discount ≤50y, 2% thereafter. "
+    "Return concise ideas in the exact format requested by the user."
 )
 
 
@@ -68,6 +73,7 @@ Return JSON list with objects containing:
 - ce_vs_benchmark (short comparison text)
 - candidates (1-3 names or orgs)
 - sources (list of {title, url})
+Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
 """
 
     messages = [
