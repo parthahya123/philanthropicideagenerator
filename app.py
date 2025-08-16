@@ -1,4 +1,5 @@
 import os
+import subprocess
 import json
 import time
 from typing import List, Dict
@@ -73,9 +74,17 @@ with st.sidebar:
     topics = ", ".join([t for t in [base, details] if t.strip()])
     max_items = st.slider("Max items per source", 5, 20, 10)
     num_ideas = st.slider("Ideas to generate", 5, 40, 5)
-    deep_research = st.checkbox("Deep research mode (two-step refinement, larger context)", value=False)
+    deep_research = st.checkbox("Deep research mode (two-step refinement, larger context)", value=True)
     st.write("Benchmarks (fixed):")
     st.json(BENCHMARKS, expanded=False)
+
+    # Run info
+    try:
+        branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode().strip()
+        commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+    except Exception:
+        branch, commit = "unknown", "unknown"
+    st.caption(f"Model: {os.getenv('OPENAI_MODEL', 'unset')} | Branch: {branch} | Commit: {commit}")
 
 st.subheader("Sources used (auto-selected)")
 st.caption("The app chooses reputable sources automatically; no selection needed.")

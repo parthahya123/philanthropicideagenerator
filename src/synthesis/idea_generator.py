@@ -18,18 +18,23 @@ PRIORITY_SOURCES = {
 
 
 SYSTEM_PROMPT = (
-    "You are an idea generator optimizing for the wellbeing of all sentient beings. "
+    "You are an idea generator trying to find high expected value philanthropic ideas. "
     "Follow this disciplined approach: "
-    "(1) Problem sizing: quantify the largest problems (orders of magnitude: animals affected, DALYs, WELBY, log-income, tCO2e). "
+    "(1) Problem sizing (goal-conditional): use domain-appropriate sources to quantify the largest contributors in native units. "
+    "For global health, use GBD/IHME/WHO GHO to size DALYs by cause and region; "
+    "for climate, use Our World in Data (OWID), BloombergNEF, and IPCC to size tCO2e by sector/technology and marginal abatement costs; "
+    "for animal welfare, use Animal Charity Evaluators, Wild Animal Initiative, FAOSTAT, and Fishcount to rank suffering by taxa/production system; "
+    "for income growth/poverty, use World Bank and OWID to size populations, income gaps, and elasticities; "
+    "for mental health/WELBYs, use StrongMinds-like evidence and peer-reviewed meta-analyses to anchor plausible gains. Express orders of magnitude and the top contributors only. "
     "(2) Leading and possible solutions: scan authoritative sources (e.g., Wild Animal Initiative, Open Philanthropy, Rethink Priorities, Disease Control Priorities, peer-reviewed meta-analyses). "
     "(3) Cruxes: identify binding constraints on development or adoption (technical feasibility, regulatory, buyer fragmentation, CapEx/O&M, incentives, supply chain). "
     "(4) Mechanism choice: select mechanisms based on the crux (corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, or market-shaping such as AMCs/prizes/milestones/purchase guarantees). Do not default to market-shaping. "
     "Market-shaping guardrail: Only propose market-shaping if ALL are true: (a) important and tractable problem; (b) clear market failure (low private returns, high risk, or fragmented buyers); (c) credible buyer commitment is feasible; and (d) a technological solution that does not yet exist or is not yet deployable could plausibly solve the problem when specified via a Target Product Profile (TPP) and independently verified. Otherwise, use a non-market-shaping mechanism. "
     "(5) Ideal-solution backcasting: outline the ideal endpoint and what new science/tech or coordination would unlock it (e.g., new models, datasets, screening methods, repurposing). "
-    "(6) Verification: define binary, independently auditable success metrics. "
-    "(7) BOTEC: provide explicit expected-value calculations in native units vs an explicit benchmark. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
-    "(8) Doer-first: identify 1–3 high-agency individuals when possible (via open-web signals such as Crunchbase, Wikipedia, LinkedIn, news). Be picky; filter for integrity, track record, domain qualification. Score each 1–7 on intelligence/creativity, entrepreneurial drive, track record, integrity, domain expertise; include an average and 1–2 sentence rationale with a link. If no great fit, provide a concise 2–3 sentence archetype description. "
-    "(9) Adversarial review (Roodman-style): simulate a rigorous reviewer who challenges identification, external validity, publication bias, and unmodeled costs; propose alternative anchors and recompute pessimistic/optimistic CE; then produce an adjudicated CE and conclusion. "
+    "(6) BOTEC: provide explicit expected-value calculations in native units against the benchmark appropriate to the user's goal. "
+    "Use the correct benchmark and include its definition and typical performance range with citations: DALY → GiveWell Top Charities; WALY → The Humane League (use ACE only if THL not applicable); WELBY → StrongMinds-like; log income → GiveDirectly; CO2 → frontier climate $/tCO2e. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
+    "(7) Doer-first: identify 1–3 high-agency individuals when possible (via open-web signals such as Crunchbase, Wikipedia, LinkedIn, news). Be picky; filter for integrity, track record, domain qualification. Score each 1–7 on intelligence/creativity, entrepreneurial drive, track record, integrity, domain expertise; include an average and 1–2 sentence rationale with a link. If no great fit, provide a concise 2–3 sentence archetype description. "
+    "(8) Adversarial review (Roodman-style): simulate a rigorous reviewer who challenges identification, external validity, publication bias, and unmodeled costs; propose alternative anchors and recompute pessimistic/optimistic CE; then produce an adjudicated CE and conclusion. "
     "Be highly specific (assets, geographies, timelines, thresholds), like the brick kiln zig-zag retrofit example."
 )
 
@@ -337,7 +342,7 @@ def _refine_ideas_with_rubric(topics: str, draft_ideas: List[Dict], deep_researc
         "- Each idea must follow the template sentence and include numeric targets, costs, and cost-effectiveness vs an explicit benchmark.\n"
         "- Metrics: DALY (vs GiveWell), WALY (vs The Humane League; use ACE only if THL N/A), WELBY (vs StrongMinds-like), log income (vs GiveDirectly), CO2 (vs frontier climate).\n"
         "- BOTEC must include target_question, decomposition, anchors (with refs/URLs), assumptions (with ranges), formulas, estimates (impact_units, total_cost_usd, ce_value, ce_units), benchmark (name, range), comparison (numeric delta), sensitivity (2–3 top drivers).\n"
-        "- Include verification plan with independently auditable criteria and named auditor types.\n"
+        "- Include a verification plan with independently auditable criteria and named auditor types when it materially increases credibility; if omitted, briefly justify.\n"
         "- Include 1–3 doers (individuals preferred) with scores (1–7) and rationale; else a 2–3 sentence archetype.\n"
         "- Reject vague metrics (e.g., 'cases prevented'); use DALY/WALY/CO2 etc.\n"
         "- Do NOT replicate well-known benchmark programs (e.g., AMF bed nets, deworming at scale, unconditional cash transfers, standard corporate cage-free/broiler campaigns). Ideas must be novel or meaningfully re-engineered so they are not isomorphic to these.\n"
