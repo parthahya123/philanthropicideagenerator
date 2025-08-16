@@ -40,11 +40,37 @@ with st.sidebar:
             os.environ["OPENAI_API_KEY"] = entered_key.strip()
     openai_key_present = bool(os.getenv("OPENAI_API_KEY"))
     st.write("OpenAI key loaded:" + (" ✅" if openai_key_present else " ❌"))
-    topics = st.text_input(
-        "Topics (comma-separated)",
-        value="statins, broiler welfare, respirators, clean indoor air, lead exposure, e-cooking, GLP-1, TB preventive therapy",
-        help="Used for API queries and LLM focus",
+    goal_options = [
+        "Improve global health (DALYs)",
+        "Reduce animal suffering (WALYs)",
+        "Increase economic growth in developing countries (log income)",
+        "Improve mental health (WELBY)",
+        "Prevent catastrophic risks (pandemics, nuclear) (DALYs)",
+        "Reduce climate risk (CO2)",
+        "Custom",
+    ]
+    goal_choice = st.selectbox(
+        "What is your goal?",
+        options=goal_options,
+        index=0,
+        help="Choose a broad objective. The model will tailor ideas and benchmarks accordingly.",
     )
+    goal_map = {
+        "Improve global health (DALYs)": "global health, DALYs",
+        "Reduce animal suffering (WALYs)": "animal welfare, WALYs",
+        "Increase economic growth in developing countries (log income)": "economic growth, log income",
+        "Improve mental health (WELBY)": "mental health, WELBY",
+        "Prevent catastrophic risks (pandemics, nuclear) (DALYs)": "catastrophic risks, pandemics, nuclear, DALYs",
+        "Reduce climate risk (CO2)": "climate, CO2",
+    }
+    details = st.text_input(
+        "Add specifics (optional)",
+        value="",
+        help="Briefly add target geographies, mechanisms, or constraints.",
+    )
+    # Assemble topics string for ingestion/synthesis
+    base = goal_map.get(goal_choice, "")
+    topics = ", ".join([t for t in [base, details] if t.strip()])
     max_items = st.slider("Max items per source", 5, 20, 10)
     num_ideas = st.slider("Ideas to generate", 5, 40, 5)
     deep_research = st.checkbox("Deep research mode (two-step refinement, larger context)", value=False)
