@@ -132,13 +132,13 @@ def synthesize_ideas(
     if any(k in (topics or "").lower() for k in ["animal", "welfare", "broiler", "fish", "shrimp", "layer", "poultry", "swine", "aquaculture"]):
         animal_clause = (
             "\nANIMAL WELFARE MODE:\n"
-            "- Cause-neutral, EV-first: start by ranking the largest sources of animal suffering by scale and intensity (e.g., taxa/production systems) using credible counts (FAOSTAT, Fishcount, ACE, WAI).\n"
-            "- Generate candidate solutions across mechanism types (corporate commitments/enforcement, certification + audits, slaughter/process upgrades, husbandry/stocking changes, breeding/genetics, feed/process additives, monitoring/verification, policy/procurement), without presupposing any single intervention.\n"
-            "- Compute expected value (WALY) for each candidate using explicit BOTECs; select the highest-EV options.\n"
-            "- Metric must be WALY. Quantify animals improved per year (often millions/billions) and cost per animal-year improved.\n"
-            "- Verification: third-party audits, plant/farm records, device logs; specify pass/fail criteria and auditor types.\n"
-            "- Benchmarks: compare WALY/$ to The Humane League (corporate campaigns) baseline; use ACE only if THL baseline is not applicable. State numeric delta.\n"
-            "- Prioritize evidence from Open Philanthropy (animal welfare), Animal Charity Evaluators, Wild Animal Initiative, FAOSTAT, and Fishcount; cite them when relevant.\n"
+            "- Cause-neutral, EV-first: start by ranking the largest sources of animal suffering by scale and intensity using credible counts (e.g., FAOSTAT, Fishcount, ACE, WAI).\n"
+            "- Consider a wide range of plausible mechanisms and delivery approaches appropriate to the production systems; do not preselect a single intervention ex ante. Justify the chosen mechanism from identified cruxes.\n"
+            "- Compute expected value (WALY) for candidates using explicit BOTECs; select the highest-EV options.\n"
+            "- Use WALY as the metric. Quantify animals improved per year and cost per animal-year improved.\n"
+            "- Describe an independent, auditable verification approach suitable to the mechanism (optional but recommended).\n"
+            "- Benchmarks: compare WALY/$ to The Humane League baseline; use ACE only if THL is not applicable. State the numeric delta.\n"
+            "- Prioritize evidence from reputable sources (e.g., Open Philanthropy on animal welfare, Animal Charity Evaluators, Wild Animal Initiative, FAOSTAT, Fishcount).\n"
         )
 
     user_prompt = f"""
@@ -348,7 +348,7 @@ def _refine_ideas_with_rubric(topics: str, draft_ideas: List[Dict], deep_researc
     )
     if is_animal:
         rubric += (
-            "- Animal welfare: cause-neutral, EV-first. First rank sources of suffering by scale/intensity (taxa/production systems), then propose multiple mechanisms, compute EV (WALY), and select the highest-EV options. Forbid shelters/education/rehab.\n"
+            "- Animal welfare: cause-neutral, EV-first. First rank sources of suffering by scale/intensity (taxa/production systems), consider multiple mechanisms, compute EV (WALY), and select the highest-EV options.\n"
             "- WALY required; state animals improved/year and $/animal-year vs THL baseline.\n"
         )
     if is_global_health:
