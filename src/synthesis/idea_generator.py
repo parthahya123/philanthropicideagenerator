@@ -113,6 +113,8 @@ Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
                 ideas = json.loads(raw[start : end + 1])
             except Exception:
                 ideas = []
+    if not isinstance(ideas, list):
+        ideas = []
 
     # Normalize and cap
     normed: List[Dict] = []

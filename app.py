@@ -83,13 +83,17 @@ with gen_col:
             st.error("Missing OPENAI_API_KEY. Set it in the sidebar or your environment.")
         else:
             with st.spinner("Fetching sources and synthesizing ideas..."):
-                docs = ingest()
-                st.session_state.ideas = synthesize_ideas(
-                    topics=topics,
-                    documents=docs,
-                    num_ideas=num_ideas,
-                )
-            st.success(f"Generated {len(st.session_state.ideas)} ideas.")
+                try:
+                    docs = ingest()
+                    st.session_state.ideas = synthesize_ideas(
+                        topics=topics,
+                        documents=docs,
+                        num_ideas=num_ideas,
+                    )
+                    st.success(f"Generated {len(st.session_state.ideas)} ideas.")
+                except Exception as e:
+                    st.session_state.ideas = []
+                    st.error(f"Generation failed: {e}")
 with export_col:
     if st.session_state.ideas:
         ideas_json = json.dumps(st.session_state.ideas, indent=2)
