@@ -25,6 +25,10 @@ st.caption("Generates philanthropic ideas from reputable sources and synthesizes
 
 if "ideas" not in st.session_state:
     st.session_state.ideas = []
+if "debug_raw" not in st.session_state:
+    st.session_state.debug_raw = ""
+if "debug_docs_count" not in st.session_state:
+    st.session_state.debug_docs_count = 0
 
 
 with st.sidebar:
@@ -43,6 +47,7 @@ with st.sidebar:
     )
     max_items = st.slider("Max items per source", 5, 20, 10)
     num_ideas = st.slider("Ideas to generate", 5, 40, 5)
+    deep_research = st.checkbox("Deep research mode (two-step refinement, larger context)", value=False)
     st.write("Benchmarks (fixed):")
     st.json(BENCHMARKS, expanded=False)
 
@@ -85,15 +90,26 @@ with gen_col:
             with st.spinner("Fetching sources and synthesizing ideas..."):
                 try:
                     docs = ingest()
-                    st.session_state.ideas = synthesize_ideas(
+                    result = synthesize_ideas(
                         topics=topics,
                         documents=docs,
                         num_ideas=num_ideas,
                         show_reasoning=True,
+                        deep_research=deep_research,
                     )
+                    if isinstance(result, dict) and "ideas" in result:
+                        st.session_state.ideas = result.get("ideas", [])
+                        st.session_state.debug_raw = result.get("raw", "")
+                        st.session_state.debug_docs_count = result.get("docs_count", 0)
+                    else:
+                        st.session_state.ideas = result or []
+                        st.session_state.debug_raw = ""
+                        st.session_state.debug_docs_count = len(docs)
                     st.success(f"Generated {len(st.session_state.ideas)} ideas.")
                 except Exception as e:
                     st.session_state.ideas = []
+                    st.session_state.debug_raw = ""
+                    st.session_state.debug_docs_count = 0
                     st.error(f"Generation failed: {e}")
 with export_col:
     if st.session_state.ideas:
@@ -116,22 +132,88 @@ else:
             if idea.get("candidates"):
                 st.write("Candidates:")
                 st.write(", ".join(idea["candidates"]))
-            if idea.get("botec"):
-                with st.expander("BOTEC (click to view)", expanded=False):
+            # Use tabs instead of nested expanders (Streamlit forbids nested expanders)
+            tabs = st.tabs(["BOTEC", "Chain of reasoning", "Reasoning", "Doers", "Sources"])
+            with tabs[0]:
+                if idea.get("botec"):
                     st.json(idea["botec"], expanded=False)
-            if idea.get("reasoning"):
-                with st.expander("Reasoning (problem sizing, cruxes, mechanism rationale, verification)", expanded=False):
+                else:
+                    st.write("No BOTEC provided.")
+            with tabs[1]:
+                botec = idea.get("botec", {}) or {}
+                if botec:
+                    if botec.get("target_question"):
+                        st.write(f"Target question: {botec.get('target_question')}")
+                    if botec.get("decomposition"):
+                        st.write("Decomposition:")
+                        for comp in botec.get("decomposition", [])[:10]:
+                            st.write(f"- {comp}")
+                    if botec.get("anchors"):
+                        st.write("Anchors:")
+                        for a in botec.get("anchors", [])[:10]:
+                            ref = a.get("ref") if isinstance(a, dict) else None
+                            url = a.get("url") if isinstance(a, dict) else None
+                            if ref and url:
+                                st.markdown(f"- [{ref}]({url})")
+                            elif ref:
+                                st.write(f"- {ref}")
+                    if botec.get("assumptions"):
+                        st.write("Assumptions:")
+                        for k, v in list(botec.get("assumptions", {}).items())[:10]:
+                            st.write(f"- {k}: {v}")
+                    if botec.get("formulas"):
+                        st.write("Formulas:")
+                        try:
+                            st.code("\n".join(botec.get("formulas", [])[:10]))
+                        except Exception:
+                            st.write(botec.get("formulas"))
+                    if botec.get("sensitivity"):
+                        st.write("Sensitivity (top drivers):")
+                        for s in botec.get("sensitivity", [])[:10]:
+                            st.write(f"- {s}")
+                debate = idea.get("debate", {}) or {}
+                if debate:
+                    st.write("Adversarial review (Roodman-style):")
+                    for sec in ["criticisms", "rebuttals"]:
+                        if debate.get(sec):
+                            st.write(sec.capitalize() + ":")
+                            for item in debate.get(sec, [])[:10]:
+                                st.write(f"- {item}")
+                    if debate.get("revised_assumptions"):
+                        st.write("Revised assumptions:")
+                        for k, v in list(debate.get("revised_assumptions", {}).items())[:10]:
+                            st.write(f"- {k}: {v}")
+                    if debate.get("recalc"):
+                        st.write("Recalculated CE:")
+                        st.json(debate.get("recalc"), expanded=False)
+                    if debate.get("final_conclusion"):
+                        st.write("Final conclusion:")
+                        st.write(debate.get("final_conclusion"))
+            with tabs[2]:
+                if idea.get("reasoning"):
                     st.json(idea["reasoning"], expanded=False)
-            if idea.get("sources"):
-                st.write("Evidence sources:")
-                for s in idea["sources"][:5]:
-                    st.write(f"- [{s.get('title','source')}]({s.get('url')})")
-            if idea.get("doers") or idea.get("doer_archetype"):
-                with st.expander("Doers (individuals/orgs)", expanded=False):
-                    if idea.get("doers"):
-                        st.json(idea["doers"], expanded=False)
-                    if idea.get("doer_archetype") and not idea.get("doers"):
-                        st.write(idea["doer_archetype"])
+                else:
+                    st.write("No extended reasoning provided.")
+            with tabs[3]:
+                if idea.get("doers"):
+                    st.json(idea["doers"], expanded=False)
+                elif idea.get("doer_archetype"):
+                    st.write(idea["doer_archetype"])
+                else:
+                    st.write("No doers provided.")
+            with tabs[4]:
+                if idea.get("sources"):
+                    for s in idea["sources"][:10]:
+                        st.write(f"- [{s.get('title','source')}]({s.get('url')})")
+                else:
+                    st.write("No sources listed.")
+
+with st.expander("Debug (last run)", expanded=False):
+    st.write(f"Docs ingested: {st.session_state.get('debug_docs_count', 0)}")
+    raw = st.session_state.get("debug_raw", "")
+    if raw:
+        st.code(raw[:1200] + ("\n..." if len(raw) > 1200 else ""))
+
 
 with st.expander("Advanced: show ingested docs (from last run)", expanded=False):
     st.write("Docs are fetched automatically when generating ideas.")
