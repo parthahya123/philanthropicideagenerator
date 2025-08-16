@@ -18,6 +18,7 @@ SYSTEM_PROMPT = (
     "(5) Ideal-solution backcasting: outline the ideal endpoint and what new science/tech or coordination would unlock it (e.g., new models, datasets, screening methods, repurposing). "
     "(6) Verification: define binary, independently auditable success metrics. "
     "(7) BOTEC: provide explicit expected-value calculations in native units vs an explicit benchmark. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
+    "(8) Doer-first: identify 1–3 high-agency individuals when possible (via open-web signals such as Crunchbase, Wikipedia, LinkedIn, news). Be picky; filter for integrity, track record, domain qualification. Score each 1–7 on intelligence/creativity, entrepreneurial drive, track record, integrity, domain expertise; include an average and 1–2 sentence rationale with a link. If no great fit, provide a concise 2–3 sentence archetype description. "
     "Be highly specific (assets, geographies, timelines, thresholds), like the brick kiln zig-zag retrofit example."
 )
 
@@ -106,6 +107,7 @@ Return JSON list with objects containing:
 - ce_vs_benchmark (short comparison text)
 - candidates (1-3 names or orgs)
 - sources (list of {{title, url}})
+ - doers (list of {"name","link","affiliation","scores":{"intelligence":1-7,"drive":1-7,"track_record":1-7,"integrity":1-7,"domain_expertise":1-7},"average_score":number,"rationale":string}) OR, if none strong, a 'doer_archetype' string (2–3 sentences)
 Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
 
 Also include a 'botec' object with the following fields:
@@ -164,6 +166,8 @@ Also include a 'botec' object with the following fields:
                 "sources": idea.get("sources", []) or [],
                 "botec": idea.get("botec", {}),
                 "reasoning": idea.get("reasoning", {}) if show_reasoning else {},
+                "doers": idea.get("doers", []) or [],
+                "doer_archetype": idea.get("doer_archetype", ""),
             }
         )
     return normed

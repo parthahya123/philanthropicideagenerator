@@ -126,6 +126,12 @@ else:
                 st.write("Evidence sources:")
                 for s in idea["sources"][:5]:
                     st.write(f"- [{s.get('title','source')}]({s.get('url')})")
+            if idea.get("doers") or idea.get("doer_archetype"):
+                with st.expander("Doers (individuals/orgs)", expanded=False):
+                    if idea.get("doers"):
+                        st.json(idea["doers"], expanded=False)
+                    if idea.get("doer_archetype") and not idea.get("doers"):
+                        st.write(idea["doer_archetype"])
 
 with st.expander("Advanced: show ingested docs (from last run)", expanded=False):
     st.write("Docs are fetched automatically when generating ideas.")
