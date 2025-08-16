@@ -9,15 +9,15 @@ from .botec import BENCHMARKS, DISCOUNT_SCHEDULE
 
 SYSTEM_PROMPT = (
     "You are an idea generator optimizing for the wellbeing of all sentient beings. "
-    "Follow this reasoning pipeline per topic: "
-    "(1) Problem sizing: quantify the biggest problems (orders of magnitude, e.g., animals affected, DALYs, tCO2e). "
-    "(2) Leading solutions: scan authoritative sources (e.g., WAI, Open Phil, RP, DCP, peer-reviewed). "
-    "(3) Cruxes: identify the binding constraints on development/adoption (technical, regulatory, buyer fragmentation, CapEx, ops). "
-    "(4) Mechanism design: propose specific levers (AMCs, prizes, milestones, purchase guarantees, pooled procurement, verification). "
-    "(5) Ideal-solution backcasting: consider what would make the problem go away; scan literature for enabling tech and what's newly possible. "
-    "(6) Verification: define binary, independent measures of success. "
-    "(7) Light BOTEC: native metric CE vs benchmark; no cross-metric conversions; 0% discount ≤50y, 2% thereafter. "
-    "Return concise ideas in the exact format requested by the user."
+    "Follow this disciplined approach: "
+    "(1) Problem sizing: quantify the largest problems (orders of magnitude: animals affected, DALYs, WELBY, log-income, tCO2e). "
+    "(2) Leading and possible solutions: scan authoritative sources (e.g., Wild Animal Initiative, Open Philanthropy, Rethink Priorities, Disease Control Priorities, peer-reviewed meta-analyses). "
+    "(3) Cruxes: identify binding constraints on development or adoption (technical feasibility, regulatory, buyer fragmentation, CapEx/O&M, incentives, supply chain). "
+    "(4) Mechanism choice: select mechanisms based on the crux (corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, or market-shaping such as AMCs/prizes/milestones/purchase guarantees). Do not default to market-shaping. "
+    "(5) Ideal-solution backcasting: outline the ideal endpoint and what new science/tech or coordination would unlock it (e.g., new models, datasets, screening methods, repurposing). "
+    "(6) Verification: define binary, independently auditable success metrics. "
+    "(7) BOTEC: provide explicit expected-value calculations in native units vs an explicit benchmark. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
+    "Be highly specific (assets, geographies, timelines, thresholds), like the brick kiln zig-zag retrofit example."
 )
 
 
@@ -71,17 +71,24 @@ def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int 
     return "[]"
 
 
-def synthesize_ideas(topics: str, documents: List[Dict], num_ideas: int = 25) -> List[Dict]:
+def synthesize_ideas(topics: str, documents: List[Dict], num_ideas: int = 25, show_reasoning: bool = False) -> List[Dict]:
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("OPENAI_API_KEY not set")
 
     context = _build_context(documents)
+    reasoning_clause = (
+        "Include a 'reasoning' object with problem_sizing, cruxes, mechanism_rationale, and verification_plan."
+        if show_reasoning
+        else ""
+    )
+
     user_prompt = f"""
 Generate {num_ideas} ideas. Constraints:
 - 3/4 human wellbeing (incl. pandemics) and 1/4 animals.
 - No cross-metric conversion. Compare to relevant benchmarks only.
 - Discount: 0% up to 50y, 2% thereafter.
-- Prefer market-shaping mechanisms where appropriate (AMCs, prizes, milestones, purchase guarantees).
+- Choose mechanisms per crux; consider corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, and market-shaping (AMCs/prizes/milestones/purchase guarantees) only when appropriate. Do not default to market-shaping.
+- Be highly specific about asset counts, geographies, timelines, and verification thresholds.
 
 Topics: {topics}
 
@@ -90,7 +97,7 @@ Evidence snippets (non-exhaustive):
 
 Return JSON list with objects containing:
 - title
-- description (single paragraph in the exact template)
+- description (single paragraph; exact template: Funding what, through what mechanism, with the expectation of having what impact at what cost, resulting in what cost-effectiveness vs benchmark.)
 - instrument (e.g., AMC, prize, milestone, purchase guarantee, direct grant)
 - metric_tag (one of DALY, WALY, WELBY, log income, CO2)
 - total_cost (USD range ok)
@@ -98,6 +105,19 @@ Return JSON list with objects containing:
 - candidates (1-3 names or orgs)
 - sources (list of {{title, url}})
 Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
+
+Also include a 'botec' object with the following fields:
+- target_question (units)
+- decomposition (list of components)
+- anchors (list of {{ref, url}})
+- assumptions (object with key: value ranges)
+- formulas (list of strings showing explicit relationships)
+- estimates {{impact_units, total_cost_usd, ce_value, ce_units}}
+- benchmark {{name, range}}
+- comparison (e.g., "better by 2–5x", "worse by ~30%")
+- sensitivity (top 2–3 drivers and how a 2x change shifts CE)
+
+{reasoning_clause}
 """
 
     messages = [
@@ -140,6 +160,8 @@ Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
                 "ce_vs_benchmark": idea.get("ce_vs_benchmark", ""),
                 "candidates": idea.get("candidates", []) or [],
                 "sources": idea.get("sources", []) or [],
+                "botec": idea.get("botec", {}),
+                "reasoning": idea.get("reasoning", {}) if show_reasoning else {},
             }
         )
     return normed

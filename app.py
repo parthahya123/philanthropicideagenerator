@@ -43,6 +43,7 @@ with st.sidebar:
     )
     max_items = st.slider("Max items per source", 5, 20, 10)
     num_ideas = st.slider("Ideas to generate", 5, 40, 5)
+    show_reasoning = st.checkbox("Show reasoning (problem sizing, cruxes, BOTEC details)", value=False)
     st.write("Benchmarks (fixed):")
     st.json(BENCHMARKS, expanded=False)
 
@@ -89,6 +90,7 @@ with gen_col:
                         topics=topics,
                         documents=docs,
                         num_ideas=num_ideas,
+                        show_reasoning=show_reasoning,
                     )
                     st.success(f"Generated {len(st.session_state.ideas)} ideas.")
                 except Exception as e:
@@ -115,6 +117,12 @@ else:
             if idea.get("candidates"):
                 st.write("Candidates:")
                 st.write(", ".join(idea["candidates"]))
+            if idea.get("botec"):
+                st.write("BOTEC:")
+                st.json(idea["botec"], expanded=False)
+            if idea.get("reasoning"):
+                st.write("Reasoning:")
+                st.json(idea["reasoning"], expanded=False)
             if idea.get("sources"):
                 st.write("Evidence sources:")
                 for s in idea["sources"][:5]:
