@@ -296,8 +296,7 @@ Add a 'debate' object representing the adversarial review:
     topics_l = (topics or "").lower()
     is_animal = any(k in topics_l for k in ["animal", "welfare", "broiler", "fish", "shrimp", "layer", "poultry", "swine", "aquaculture"])
     is_global_health = any(k in topics_l for k in [
-        "health", "malaria", "tb", "hiv", "statin", "polypill", "oxygen", "diarrhea", "ors", "zinc", "lead", "air pollution",
-        "respirator", "uv", "smc", "vaccin", "tpt", "therapy", "cholera", "wastewater", "gbs", "e-cooking", "pm2.5"
+        "health", "malaria", "tb", "hiv", "pandemic", "epidemic"
     ])
     allowed_metrics = {"DALY", "WALY", "WELBY", "log income", "CO2"}
     for idea in refined[:num_ideas]:
@@ -332,8 +331,7 @@ def _refine_ideas_with_rubric(topics: str, draft_ideas: List[Dict], deep_researc
     topics_l = (topics or "").lower()
     is_animal = any(k in topics_l for k in ["animal", "welfare", "broiler", "fish", "shrimp", "layer", "poultry", "swine", "aquaculture"])
     is_global_health = any(k in topics_l for k in [
-        "health", "malaria", "tb", "hiv", "statin", "polypill", "oxygen", "diarrhea", "ors", "zinc", "lead", "air pollution",
-        "respirator", "uv", "smc", "vaccin", "tpt", "therapy", "cholera", "wastewater", "gbs", "e-cooking", "pm2.5"
+        "health", "malaria", "tb", "hiv", "pandemic", "epidemic"
     ])
 
     rubric = (
@@ -355,7 +353,7 @@ def _refine_ideas_with_rubric(topics: str, draft_ideas: List[Dict], deep_researc
         )
     if is_global_health:
         rubric += (
-            "- Global health: DALY required; state $/DALY vs GiveWell; examples include statins cascade, polypill, oxygen uptime, ORS+zinc, SMC, lead elimination, clean indoor air.\n"
+            "- Global health: DALY required; state $/DALY vs GiveWell; focus on highest-burden causes per GBD/IHME rather than prespecified interventions.\n"
         )
 
     user = (
