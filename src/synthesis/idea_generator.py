@@ -2,6 +2,7 @@ from typing import List, Dict
 import os
 from tenacity import wait_exponential, stop_after_attempt  # retained import to avoid unused removal churn
 from openai import OpenAI
+import httpx
 
 from .botec import BENCHMARKS, DISCOUNT_SCHEDULE
 
@@ -41,7 +42,9 @@ def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int 
     for m in messages:
         safe_messages.append({"role": str(m.get("role", "user")), "content": str(m.get("content", ""))})
 
-    client = OpenAI()
+    # Create an explicit httpx client without proxies to avoid environment proxy misconfig errors
+    http_client = httpx.Client(timeout=60.0)
+    client = OpenAI(http_client=http_client)
     models_to_try = [
         os.getenv("OPENAI_MODEL", model),
         "gpt-4o-mini",
