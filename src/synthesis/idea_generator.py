@@ -1,6 +1,6 @@
 from typing import List, Dict
 import os
-from tenacity import retry, wait_exponential, stop_after_attempt
+from tenacity import wait_exponential, stop_after_attempt  # retained import to avoid unused removal churn
 from openai import OpenAI
 
 from .botec import BENCHMARKS, DISCOUNT_SCHEDULE
@@ -35,28 +35,36 @@ def _build_context(documents: List[Dict], max_chars: int = 12000) -> str:
     return "\n".join(parts)
 
 
-@retry(wait=wait_exponential(min=1, max=5), stop=stop_after_attempt(2))
-def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int = 2000) -> str:
+def _call_llm(messages: List[Dict], model: str = "gpt-4o-mini", max_tokens: int = 1200) -> str:
     # Ensure message contents are strings
-    safe_messages = []
+    safe_messages: List[Dict[str, str]] = []
     for m in messages:
-        safe_messages.append({"role": m.get("role", "user"), "content": str(m.get("content", ""))})
+        safe_messages.append({"role": str(m.get("role", "user")), "content": str(m.get("content", ""))})
 
     client = OpenAI()
-    last_exc = None
-    for m in [model, "gpt-4o", "gpt-4o-mini-2024-07-18", "gpt-3.5-turbo-0125"]:
+    models_to_try = [
+        os.getenv("OPENAI_MODEL", model),
+        "gpt-4o-mini",
+        "gpt-4o",
+        "gpt-4o-mini-2024-07-18",
+        "gpt-3.5-turbo-0125",
+    ]
+    for m in models_to_try:
         try:
+            if not m:
+                continue
             resp = client.chat.completions.create(
                 model=m,
                 messages=safe_messages,
                 temperature=0.6,
                 max_tokens=max_tokens,
             )
-            return resp.choices[0].message.content or ""
-        except Exception as exc:  # capture and try fallback models
-            last_exc = exc
+            content = resp.choices[0].message.content if resp and resp.choices else ""
+            return content or "[]"
+        except Exception:
+            # Try next model
             continue
-    # Fallback to empty JSON list to avoid crashing the app; upstream will handle gracefully
+    # Final fallback
     return "[]"
 
 
