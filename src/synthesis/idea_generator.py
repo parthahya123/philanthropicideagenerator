@@ -22,20 +22,19 @@ SYSTEM_PROMPT = (
     "Follow this disciplined approach: "
     "(1) Problem sizing (goal-conditional): use domain-appropriate sources to quantify the largest contributors in native units. "
     "For global health, use GBD/IHME/WHO GHO to size DALYs by cause and region; "
-    "for climate, use Our World in Data (OWID), BloombergNEF, and IPCC to size tCO2e by sector/technology and marginal abatement costs; "
-    "for animal welfare, use Animal Charity Evaluators, Wild Animal Initiative, FAOSTAT, and Fishcount to rank suffering by taxa/production system; "
+    "for climate, use sources like Our World in Data (OWID), BloombergNEF, and IPCC to size tCO2e by sector/technology and marginal abatement costs; "
+    "for animal welfare, use reputable sources (e.g., ACE, WAI, FAOSTAT, Fishcount) to rank suffering by taxa/production system; "
     "for income growth/poverty, use World Bank and OWID to size populations, income gaps, and elasticities; "
-    "for mental health/WELBYs, use StrongMinds-like evidence and peer-reviewed meta-analyses to anchor plausible gains. Express orders of magnitude and the top contributors only. "
-    "(2) Leading and possible solutions: scan authoritative sources (e.g., Wild Animal Initiative, Open Philanthropy, Rethink Priorities, Disease Control Priorities, peer-reviewed meta-analyses). "
+    "for mental health/WELBYs, use sources like GBD and peer-reviewed meta-analyses to anchor estimates. Express orders of magnitude and the top contributors only. "
+    "(2) Leading and possible solutions: scan authoritative sources (peer-reviewed literature, high-quality policy analyses, reputable research orgs). "
     "(3) Cruxes: identify binding constraints on development or adoption (technical feasibility, regulatory, buyer fragmentation, CapEx/O&M, incentives, supply chain). "
-    "(4) Mechanism choice: select mechanisms based on the crux (corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, or market-shaping such as AMCs/prizes/milestones/purchase guarantees). Do not default to market-shaping. "
-    "Market-shaping guardrail: Only propose market-shaping if ALL are true: (a) important and tractable problem; (b) clear market failure (low private returns, high risk, or fragmented buyers); (c) credible buyer commitment is feasible; and (d) a technological solution that does not yet exist or is not yet deployable could plausibly solve the problem when specified via a Target Product Profile (TPP) and independently verified. Otherwise, use a non-market-shaping mechanism. "
+    "(4) Mechanism choice: consider the full space of mechanisms and select based on the identified cruxes; avoid preselecting interventions or instruments. Where relevant, assess whether market-shaping is appropriate given market failure and buyer commitment, but do not assume it by default. "
     "(5) Ideal-solution backcasting: outline the ideal endpoint and what new science/tech or coordination would unlock it (e.g., new models, datasets, screening methods, repurposing). "
     "(6) BOTEC: provide explicit expected-value calculations in native units against the benchmark appropriate to the user's goal. "
     "Use the correct benchmark and include its definition and typical performance range with citations: DALY → GiveWell Top Charities; WALY → The Humane League (use ACE only if THL not applicable); WELBY → StrongMinds-like; log income → GiveDirectly; CO2 → frontier climate $/tCO2e. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
     "(7) Doer-first: identify 1–3 high-agency individuals when possible (via open-web signals such as Crunchbase, Wikipedia, LinkedIn, news). Be picky; filter for integrity, track record, domain qualification. Score each 1–7 on intelligence/creativity, entrepreneurial drive, track record, integrity, domain expertise; include an average and 1–2 sentence rationale with a link. If no great fit, provide a concise 2–3 sentence archetype description. "
     "(8) Adversarial review (Roodman-style): simulate a rigorous reviewer who challenges identification, external validity, publication bias, and unmodeled costs; propose alternative anchors and recompute pessimistic/optimistic CE; then produce an adjudicated CE and conclusion. "
-    "Be highly specific (assets, geographies, timelines, thresholds), like the brick kiln zig-zag retrofit example."
+    "Be highly specific (assets, geographies, timelines, thresholds) in reasoning, not by prespecifying interventions."
 )
 
 
@@ -146,10 +145,9 @@ Generate {num_ideas} ideas. Constraints:
 - 3/4 human wellbeing (incl. pandemics) and 1/4 animals.
 - No cross-metric conversion. Compare to relevant benchmarks only.
 - Discount: 0% up to 50y, 2% thereafter.
-- Choose mechanisms per crux; consider corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, and market-shaping (AMCs/prizes/milestones/purchase guarantees) only when appropriate. Do not default to market-shaping.
+- Select mechanisms based on identified cruxes; avoid precommitting to specific intervention types. Justify the choice succinctly.
 - Be highly specific about asset counts, geographies, timelines, and verification thresholds.
- - Market-shaping guardrail (must satisfy all): important & tractable; clear market failure; credible buyer commitment; and the presence of a technological solution that does not yet exist (or is not yet deployable) but could plausibly solve the problem when specified via a TPP and independently verified. If not satisfied, do NOT use market-shaping.
- - Benchmarks mapping (must cite explicitly in BOTEC): DALY → GiveWell Top Charities; WALY → The Humane League (corporate campaigns) by default (use ACE only if THL not applicable); WELBY → StrongMinds-like references; log income → GiveDirectly; CO2 → frontier climate $/tCO2e.
+- Benchmarks mapping (must cite explicitly in BOTEC): DALY → GiveWell Top Charities; WALY → The Humane League (corporate campaigns) by default (use ACE only if THL not applicable); WELBY → StrongMinds-like references; log income → GiveDirectly; CO2 → frontier climate $/tCO2e.
 
 Topics: {topics}
 
@@ -161,13 +159,13 @@ Evidence snippets (non-exhaustive):
 Return a JSON object with the EXACT key name "ideas" whose value is a list of idea objects. Do not use any other top-level key. Each idea object contains:
 - title
 - description (single paragraph; exact template: Funding what, through what mechanism, with the expectation of having what impact at what cost, resulting in what cost-effectiveness vs benchmark.)
-- instrument (e.g., AMC, prize, milestone, purchase guarantee, direct grant)
+- instrument (free-text; keep concise)
 - metric_tag (one of DALY, WALY, WELBY, log income, CO2)
 - total_cost (USD range ok)
 - ce_vs_benchmark (short comparison text)
 - candidates (1-3 names or orgs)
 - sources (list of {{title, url}})
- - doers (list of {{"name","link","affiliation","scores":{{"intelligence":1-7,"drive":1-7,"track_record":1-7,"integrity":1-7,"domain_expertise":1-7}},"average_score":number,"rationale":string}}) OR, if none strong, a 'doer_archetype' string (2–3 sentences)
+- doers (list of {{"name","link","affiliation","scores":{{"intelligence":1-7,"drive":1-7,"track_record":1-7,"integrity":1-7,"domain_expertise":1-7}},"average_score":number,"rationale":string}}) OR, if none strong, a 'doer_archetype' string (2–3 sentences)
 Ensure novelty by addressing adoption barriers/cruxes with a concrete mechanism.
 
 Also include a 'botec' object with the following fields:
@@ -343,7 +341,7 @@ def _refine_ideas_with_rubric(topics: str, draft_ideas: List[Dict], deep_researc
         "- Include a verification plan with independently auditable criteria and named auditor types when it materially increases credibility; if omitted, briefly justify.\n"
         "- Include 1–3 doers (individuals preferred) with scores (1–7) and rationale; else a 2–3 sentence archetype.\n"
         "- Reject vague metrics (e.g., 'cases prevented'); use DALY/WALY/CO2 etc.\n"
-        "- Do NOT replicate well-known benchmark programs (e.g., AMF bed nets, deworming at scale, unconditional cash transfers, standard corporate cage-free/broiler campaigns). Ideas must be novel or meaningfully re-engineered so they are not isomorphic to these.\n"
+        "- Do NOT replicate well-known benchmark programs. Ideas must be novel or meaningfully re-engineered so they are not isomorphic to these.\n"
         "- For each idea, add 'novelty_rationale' (2–3 sentences) explaining what is new (mechanism, verification, buyer config, TPP, or delivery innovation) and why this could beat benchmarks on expected value.\n"
     )
     if is_animal:
