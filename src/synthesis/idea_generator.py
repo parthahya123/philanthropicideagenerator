@@ -14,6 +14,7 @@ SYSTEM_PROMPT = (
     "(2) Leading and possible solutions: scan authoritative sources (e.g., Wild Animal Initiative, Open Philanthropy, Rethink Priorities, Disease Control Priorities, peer-reviewed meta-analyses). "
     "(3) Cruxes: identify binding constraints on development or adoption (technical feasibility, regulatory, buyer fragmentation, CapEx/O&M, incentives, supply chain). "
     "(4) Mechanism choice: select mechanisms based on the crux (corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, or market-shaping such as AMCs/prizes/milestones/purchase guarantees). Do not default to market-shaping. "
+    "Market-shaping guardrail: Only propose market-shaping if ALL are true: (a) important and tractable problem; (b) clear market failure (low private returns, high risk, or fragmented buyers); (c) credible buyer commitment is feasible; and (d) a technological solution that does not yet exist or is not yet deployable could plausibly solve the problem when specified via a Target Product Profile (TPP) and independently verified. Otherwise, use a non-market-shaping mechanism. "
     "(5) Ideal-solution backcasting: outline the ideal endpoint and what new science/tech or coordination would unlock it (e.g., new models, datasets, screening methods, repurposing). "
     "(6) Verification: define binary, independently auditable success metrics. "
     "(7) BOTEC: provide explicit expected-value calculations in native units vs an explicit benchmark. No cross-metric conversions. Discount 0% ≤ 50y, 2% thereafter. "
@@ -89,6 +90,7 @@ Generate {num_ideas} ideas. Constraints:
 - Discount: 0% up to 50y, 2% thereafter.
 - Choose mechanisms per crux; consider corporate commitments/campaigns, regulation/enforcement, direct/pooled procurement and delivery, standards/verification, concessionary finance, policy advocacy, and market-shaping (AMCs/prizes/milestones/purchase guarantees) only when appropriate. Do not default to market-shaping.
 - Be highly specific about asset counts, geographies, timelines, and verification thresholds.
+ - Market-shaping guardrail (must satisfy all): important & tractable; clear market failure; credible buyer commitment; and the presence of a technological solution that does not yet exist (or is not yet deployable) but could plausibly solve the problem when specified via a TPP and independently verified. If not satisfied, do NOT use market-shaping.
 
 Topics: {topics}
 
